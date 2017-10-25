@@ -1,0 +1,419 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Facebook Live Reactions Poll</title>
+	<link href="https://fonts.googleapis.com/css?family=Roboto+Condensed" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+	<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+	<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+	<script type="text/javascript">
+		/** Script Settings **/
+		var accessToken = 'EAAac98RINCgBABilexsJCW7KSZChm7qys0f4qoJazeslvNCdLAxSriK1IwtU2YdEyN2dI9fFSZBjOKf8LuKPEU3DHqm0SmJkg8KybZAW3tZBJuqsx7DM9YiwZAhnHDeISuMoHaFZC8nMZCWdWZAjZB5QYRsVApnuY0ecZD',
+		postID = '168900520359961';
+	</script>
+	<style type="text/css">
+		* {
+			margin: 0;
+			padding: 0;
+			border: 0;
+			box-sizing: border-box;
+		}
+		html {
+			position: relative;
+			font-size: 16px;
+		}
+		body {
+			margin: 0;
+			padding: 0;
+			font-size: 100%;
+			font-family: 'Roboto Condensed', sans-serif;
+		}
+		.container {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 640px;
+			height: 360px;
+			background-color: transparent;
+						overflow: hidden;
+		}
+		img {
+			max-width: 100%;
+			height: auto;
+		}
+		.overlay {
+			position: fixed;
+			z-index: 9999999999;
+			background: rgba(255,255,255, 0.875);
+			width: 100%;
+			height: 100%;
+		}
+		.overlay-message {
+			width: 512px;
+			margin: 2em 1em;
+			font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+		}
+		.overlay-message p {
+			margin-bottom: 1em;
+			font-weight: 500;
+			line-height: 1.5;
+		}
+		.overlay-message a {
+			display: inline-block;
+			color: #fff;
+			background: tomato;
+			padding: 0.75em 1.5em;
+			text-decoration: none;
+			border-radius: 0.325em;
+		}
+	</style>
+</head>
+
+<body>
+		<div class="overlay">
+		<div class="overlay-message">
+			<p>Right click on the BrowserSource and Click Interact to remove this message and interact with the counters.</p>
+			<p>You can drag the counters to arrange and position them.</p>
+			<p>You can resize the counters to change their size.</p>
+			<p>You can add background videos, images, gif, music in OBS.</p>
+			<p>MAC Users can use TAB key to choose counters and arrow keys or SHIFT + arrow keys (faster) to move counters.</p>
+			<p>This message will disappear in 15 seconds.</p>
+			<a href="#" id="got-it">Done</a>
+		</div>
+	</div>
+		<div class="container">
+		<!-- Template Start -->
+<style type="text/css">	
+	.option {
+		position: absolute;
+		display: block;
+		width: 8rem;
+		overflow: hidden;
+		cursor: move;
+		z-index: 94;
+	}
+
+		.thumb {
+		width: 100%;
+		text-align: center;
+				border-radius: 50%;
+				overflow: hidden;
+	}
+
+	.thumb img {
+		display: block;
+		margin: 0 auto;
+	}
+
+	.counter {
+		margin: 0.25em auto 0;
+	}
+		
+	.counter {
+		position: relative;
+		width: 100%;		
+		overflow: hidden;
+		background-repeat: no-repeat;
+		height: 0;
+	}
+
+		.counter-like {
+		background-image: url('images/like.svg');
+	}
+	
+	.counter p {
+		position: absolute;
+		width: 100%;
+		top: 50%;
+		transform: translateY(-50%);
+		text-align: center;
+		font-size: 1.25em;
+		padding-left: 1em;
+		background-color: transparent;
+	}
+
+	
+	.counter {
+		padding-bottom: 30.20134228187919%; /* 90 / 298 */
+		background-size: 100%;
+	}
+	
+	.counter p {
+		color: #fff;
+	}
+
+	
+	.counter-share p,
+	.counter-comment p,
+	.counter-thankful p {
+		color: #2e2e2e;
+	}
+</style>
+
+<div class="option" style="left: 0rem; top: 0%" tabindex="1">
+		<div class="thumb">
+		<img src="images/maxresdefault.jpg" alt="">
+	</div>
+		<div class="counter counter-like">
+		<p id="like">0</p>
+	</div>
+</div>
+
+<script>
+	$(document).ready(function(){
+		$('.option').draggable({
+			containment: ".container"
+		});
+
+		$('.option').resizable({
+			containment: ".container",
+			aspectRatio: true,
+			autoHide: true,
+			minWidth: 96,
+			resize: function(e, ui) {
+				$(e.target).css({'font-size' : $(e.target).width() / 8});
+			}
+		});
+
+		$('.option').focus(function(){
+			$(this).css( "border", "2px solid #e74c3c" );
+		});
+
+		$('.option').focusout(function(){
+			$(this).css( "border", "0" );	
+		});
+
+		$(document).keydown(function(e) {
+			var key = e.which;
+			if(!(key === 37 || key === 38 || key === 39 || key === 40))
+				return;
+			
+			var focused = $(':focus');
+			if(!focused.hasClass('option'))
+				return;
+
+			focused.css( "border", "2px solid #2ecc71" );
+
+			var left = focused.offset().left,
+			top = focused.offset().top,
+			isShift = !!e.shiftKey,
+			increment = isShift ? 10 : 1;
+
+			switch(e.which) {
+				case 37: left -= increment;
+				break;
+
+				case 38: top -= increment;
+				break;
+
+				case 39: left += increment;
+				break;
+
+				case 40: top += increment;
+				break;
+
+				default: return;
+			}
+			focused.css({
+				"left" : left + "px",
+				"top" : top + "px"
+			});
+			e.preventDefault();
+		});
+	});
+		function update() {
+				$('#like').text(counters.like);			}
+	</script>
+<!-- Template End --><!-- Shoutbox Start -->
+<style>
+	#shoutbox {
+		display: block;
+		list-style: none;
+		font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+		position: absolute;
+		width: 20rem;
+		bottom: 0;
+		left: 0;
+		padding: 0.5rem 1rem;
+		z-index: 93;
+	}
+
+	#shoutbox li {
+		display: none;
+		margin-bottom: 0.25em;
+	}
+
+	.comment {
+		font-size: 0.75rem;
+		display: inline-block;
+		background: rgba(255,255,255, 0.675);
+		padding: 0.75em;
+		border-radius: 0.25em;
+		overflow: hidden;
+		box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12), 0 3px 1px -2px rgba(0,0,0,0.2);
+	}
+
+	.name {
+		display: block;
+		font-weight: 700;
+		color: #c0392b;
+		font-size: 0.875em;
+		margin-bottom: 0.25em;
+	}
+
+	.message {
+		color: #2e2e2e;
+		font-weight: 500;
+	}
+
+	.message em {
+		color: #03A9F4;
+	}
+
+	.message img {
+		max-width: 4em;
+		float: left;
+		margin-right: 0.5em;
+		margin-bottom: 0.5em;
+	}
+
+	.time {
+		display: block;
+		font-size: 0.675em;
+		color: #777;
+		margin-top: 0.25em;
+		clear: both;
+	}
+</style>
+
+<ul id="shoutbox">
+</ul>
+
+<script type="text/javascript">
+	var shoutboxUrl = 'https://graph.facebook.com/v2.8/' + postID + '?fields=comments.limit(33).order(reverse_chronological){message, attachment{media{image{src}}}, created_time, message_tags{name}, from{name,id}}' + '&access_token=' + accessToken,
+	oldCommentsID = [];
+
+	function shoutboxUpdate() {
+		$.getJSON(shoutboxUrl, function(response){
+			if(response.comments) {
+				var comments =  response.comments.data;
+
+				for(var i = comments.length - 1; i >= 0; i--) {
+					if(oldCommentsID.indexOf(comments[i].id) === -1) {
+
+						var message = comments[i].message,
+						name = comments[i].from.name,
+						time = comments[i].created_time,
+						commentImage = '', tags = [];
+
+						if(comments[i].attachment) {
+							commentImage = '<img src="' + comments[i].attachment.media.image.src + '">';
+						}
+						if(comments[i].message_tags) {
+							tags = comments[i].message_tags;
+							for(j = 0; j < tags.length; j++) {
+								message = message.replace(tags[j].name, "<em>@" + tags[j].name + "</em>");
+							}
+						}
+						$('<li></li>')
+							.html('<div class="comment"><span class="name">' + name + '</span><span class="message">' + commentImage + message + '</span><span class="time" data-time="' + time + '">Just now</span></div>')
+							.appendTo('#shoutbox').show('slow');
+						oldCommentsID.push(comments[i].id);
+					}
+				}			
+			}
+		})
+		.fail(function(data){
+			response = JSON.parse(data.responseText);
+			alert('Error: ' + response.error.message);
+			clearInterval(shoutboxInterval);
+		});
+		updateTime();
+	}
+
+	function updateTime() {
+		var times = $('.time'),
+		endDate = new Date(),
+		time, seconds;
+
+		for(var i = 0; i < times.length; i++) {
+			time = new Date($(times[i]).data('time'));
+			seconds = (endDate - time) / 1000;
+			
+			time = 'Just now';
+			if(seconds > 60) time = '1 Min ago';
+			if(seconds > 120) time = Math.floor(seconds/60) + ' Mins ago';
+			if(seconds > 3600) time = '1 Hr ago';
+			if(seconds > 7200) time = Math.floor(seconds/3600) + ' Hrs ago';
+			
+			$(times[i]).text(time);
+		}
+	}
+	shoutboxUpdate();
+	var shoutboxInterval = setInterval(shoutboxUpdate, 3 * 1000);
+</script>
+<!-- Shoutbox End -->	
+	</div>
+	<script>
+	var url,
+	counters = {},
+	fields = [],
+	sharedPosts = [],
+	interval;
+
+	
+	
+	$(document).ready(function(){		
+		generateURL();
+		getCount();
+		interval = setInterval(getCount, 8 * 1000);		
+	});
+
+	function generateURL() {
+		var _fields = fields.join() !== '' ? fields.join() + ',' : '';
+		sharedPosts.unshift(postID);
+		url = 'https://graph.facebook.com/v2.8/?ids=' + sharedPosts.join() + '&fields=' + _fields;
+				url +='reactions.type(LIKE).limit(0).summary(total_count).as(reaction_like),';
+				
+		url = url.substring(0, url.length - 1);
+		url += '&access_token=' + accessToken;
+	}
+
+	function getCount() {
+		$.getJSON(url, function(response){
+						var total_like = 0;
+												for(var key in response) {
+				if (!response.hasOwnProperty(key)) continue;
+								total_like += response[key].reaction_like.summary.total_count;
+															}
+			counters = {
+								like : total_like,
+							};
+
+										
+
+						update();
+		})
+		.fail(function(data){
+			response = JSON.parse(data.responseText);
+			alert('Error: ' + response.error.message);
+			clearInterval(interval);
+		});
+	}
+</script>
+		<script type="text/javascript">
+		$(document).ready(function(){
+			$('#got-it').on('click', function(e){
+				e.preventDefault();
+				$('.overlay').fadeOut();
+			});
+
+			setTimeout(function(){
+				$('.overlay').fadeOut();
+			}, 15 * 1000);
+		});
+	</script>
+	</body>
+</html>
